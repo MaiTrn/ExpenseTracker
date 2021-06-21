@@ -22,61 +22,12 @@ const Home = (props) => {
   const [showMore, setShowMore] = useState(false);
 
   React.useEffect(() => {
-    setCategories(props.route.params.categoriesData);
-  });
+    setCategories(props.categoriesData);
+  }, [props.categoriesData]);
 
   const categoryListHeightAnimationValue = useRef(
     new Animated.Value(115)
   ).current;
-
-  function renderNavBar() {
-    return (
-      <View
-        style={{
-          height: 60,
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "flex-end",
-          paddingHorizontal: SIZES.padding,
-          backgroundColor: COLORS.white,
-        }}
-      >
-        <TouchableOpacity
-          style={{
-            justifyContent: "center",
-            alignItems: "flex-start",
-            width: 50,
-          }}
-          onPress={() => navigation.navigate("Main")}
-        >
-          <Image
-            source={icons.back_arrow}
-            style={{
-              height: 25,
-              width: 25,
-              tintColor: COLORS.primary,
-            }}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={{
-            justifyContent: "center",
-            alignItems: "flex-end",
-            width: 50,
-          }}
-        >
-          <Image
-            source={icons.more}
-            style={{
-              height: 25,
-              width: 25,
-              tintColor: COLORS.primary,
-            }}
-          />
-        </TouchableOpacity>
-      </View>
-    );
-  }
 
   function renderHeader() {
     return (
@@ -84,15 +35,76 @@ const Home = (props) => {
         style={{
           backgroundColor: COLORS.white,
           padding: SIZES.padding,
+          paddingTop: 30,
         }}
       >
-        <View>
-          <Text style={{ color: COLORS.primary, ...FONTS.h2 }}>
-            My Expenses
-          </Text>
-          <Text style={{ color: COLORS.darkgray, ...FONTS.h3 }}>
-            Summary (private)
-          </Text>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <View>
+            <Text style={{ color: COLORS.primary, ...FONTS.h2 }}>
+              My Expenses
+            </Text>
+            <Text style={{ color: COLORS.darkgray, ...FONTS.h3 }}>
+              Summary (private)
+            </Text>
+          </View>
+          <View
+            style={{
+              flexDirection: "row",
+              marginRight: -10,
+            }}
+          >
+            <TouchableOpacity
+              style={{
+                height: 50,
+                width: 50,
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: 25,
+                backgroundColor: viewMode == "chart" ? COLORS.secondary : null,
+              }}
+              onPress={() => setViewMode("chart")}
+            >
+              <Image
+                source={icons.chart}
+                resizeMode="contain"
+                style={{
+                  height: 20,
+                  width: 20,
+                  tintColor:
+                    viewMode == "chart" ? COLORS.white : COLORS.darkgray,
+                }}
+              />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={{
+                alignItems: "center",
+                justifyContent: "center",
+                height: 50,
+                width: 50,
+                borderRadius: 25,
+                backgroundColor: viewMode == "list" ? COLORS.secondary : null,
+              }}
+              onPress={() => setViewMode("list")}
+            >
+              <Image
+                source={icons.menu}
+                resizeMode="contain"
+                style={{
+                  height: 20,
+                  width: 20,
+                  tintColor:
+                    viewMode == "list" ? COLORS.white : COLORS.darkgray,
+                }}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View
@@ -133,78 +145,6 @@ const Home = (props) => {
               18% more than last month
             </Text>
           </View>
-        </View>
-      </View>
-    );
-  }
-
-  function renderCategoriesHeader() {
-    return (
-      <View
-        style={{
-          flexDirection: "row",
-          padding: SIZES.padding,
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        {/* Title */}
-        <View>
-          <Text style={{ color: COLORS.primary, ...FONTS.h3 }}>CATEGORIES</Text>
-          <Text style={{ color: COLORS.darkgray, ...FONTS.body4 }}>
-            {categories?.length} total
-          </Text>
-        </View>
-
-        {/* Buttons */}
-        <View
-          style={{
-            flexDirection: "row",
-          }}
-        >
-          <TouchableOpacity
-            style={{
-              height: 50,
-              width: 50,
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: 25,
-              backgroundColor: viewMode == "chart" ? COLORS.secondary : null,
-            }}
-            onPress={() => setViewMode("chart")}
-          >
-            <Image
-              source={icons.chart}
-              resizeMode="contain"
-              style={{
-                height: 20,
-                width: 20,
-                tintColor: viewMode == "chart" ? COLORS.white : COLORS.darkgray,
-              }}
-            />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={{
-              alignItems: "center",
-              justifyContent: "center",
-              height: 50,
-              width: 50,
-              borderRadius: 25,
-              backgroundColor: viewMode == "list" ? COLORS.secondary : null,
-            }}
-            onPress={() => setViewMode("list")}
-          >
-            <Image
-              source={icons.menu}
-              resizeMode="contain"
-              style={{
-                height: 20,
-                width: 20,
-                tintColor: viewMode == "list" ? COLORS.white : COLORS.darkgray,
-              }}
-            />
-          </TouchableOpacity>
         </View>
       </View>
     );
@@ -479,11 +419,11 @@ const Home = (props) => {
     //filter expenses with "Confirmed status"
     let chartData = categories?.map((item) => {
       let confirmExpenses = item.expenses?.filter((a) => a.status == "C");
-      var total = confirmExpenses.reduce((a, b) => a + (b.total || 0), 0);
+      var total = confirmExpenses?.reduce((a, b) => a + (b.total || 0), 0);
       return {
         name: item.name,
         y: total,
-        expenseCount: confirmExpenses.length,
+        expenseCount: confirmExpenses?.length,
         color: item.color,
         id: item.id,
       };
@@ -683,7 +623,7 @@ const Home = (props) => {
             ...FONTS.h4,
           }}
         >
-          {item.y} USD - {item.label}
+          {item.y.toFixed(2)} USD - {item.label}
         </Text>
       </TouchableOpacity>
     );
@@ -691,7 +631,8 @@ const Home = (props) => {
     return (
       <View
         style={{
-          padding: SIZES.padding,
+          paddingHorizontal: SIZES.padding,
+          paddingVertical: SIZES.padding * 0.6,
         }}
       >
         <FlatList
@@ -705,14 +646,9 @@ const Home = (props) => {
 
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.lightGray2 }}>
-      {renderNavBar()}
       {renderHeader()}
-      {renderCategoriesHeader()}
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 5 }}
-      >
+      <ScrollView showsVerticalScrollIndicator={false}>
         {viewMode == "list" && (
           <View>
             {renderCategoriesList()}

@@ -8,7 +8,7 @@ import { Provider } from "react-redux";
 import { createStore, applyMiddleware } from "redux";
 import thunk from "redux-thunk";
 
-import Home from "./screens/Home.js";
+import Add from "./screens/Add.js";
 import Main from "./screens/Main.js";
 import rootReducer from "./redux/reducers";
 
@@ -50,7 +50,7 @@ const App = () => {
           initialRouteName="Main"
         >
           <Stack.Screen name="Main" component={Main} />
-          <Stack.Screen name="Home" component={Home} />
+          <Stack.Screen name="Add" component={Add} />
         </Stack.Navigator>
       </NavigationContainer>
     </Provider>

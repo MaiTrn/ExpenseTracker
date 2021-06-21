@@ -5,7 +5,10 @@ import { bindActionCreators } from "redux";
 import { fetchExpenses } from "../redux/actions";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
+import Home from "./Home";
+
 const Tab = createBottomTabNavigator();
+const EmptyScreen = () => null;
 
 export class Main extends React.Component {
   componentDidMount() {
@@ -14,21 +17,19 @@ export class Main extends React.Component {
 
   render() {
     return (
-      <View style={{ marginTop: 30 }}>
-        <TextInput placeholder="Write your expense" />
-        <TouchableOpacity>
-          <Text>Save</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() =>
-            this.props.navigation.navigate("Home", {
-              categoriesData: this.props.categoriesData,
-            })
-          }
-        >
-          <Text>MY EXPENSES</Text>
-        </TouchableOpacity>
-      </View>
+      <Tab.Navigator initialRouteName="Home">
+        <Tab.Screen component={Home} name="Home" />
+        <Tab.Screen
+          component={EmptyScreen}
+          name="AddNew"
+          listeners={({ navigation }) => ({
+            tabPress: (event) => {
+              event.preventDefault();
+              navigation.navigate("Add");
+            },
+          })}
+        />
+      </Tab.Navigator>
     );
   }
 }
