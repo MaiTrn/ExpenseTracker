@@ -1,6 +1,6 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { useFonts } from "expo-font";
+import * as Font from "expo-font";
 import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import firebase from "firebase";
@@ -8,6 +8,9 @@ import { Provider } from "react-redux";
 import { createStore, applyMiddleware } from "redux";
 import thunk from "redux-thunk";
 
+import Landing from "./screens/auth/Landing";
+import Register from "./screens/auth/Register";
+import Login from "./screens/auth/Login";
 import Add from "./screens/Add.js";
 import Main from "./screens/Main.js";
 import rootReducer from "./redux/reducers";
@@ -29,35 +32,78 @@ if (firebase.apps.length === 0) {
 
 const store = createStore(rootReducer, applyMiddleware(thunk));
 
-const App = () => {
-  const [loaded] = useFonts({
-    "Roboto-Black": require("./assets/fonts/Roboto-Black.ttf"),
-    "Roboto-Bold": require("./assets/fonts/Roboto-Bold.ttf"),
-    "Roboto-Regular": require("./assets/fonts/Roboto-Regular.ttf"),
-  });
-
-  if (!loaded) {
-    return null;
-  }
-
-  return (
-    <Provider store={store}>
-      <NavigationContainer theme={theme}>
-        <Stack.Navigator
-          screenOptions={{
-            headerShown: false,
-          }}
-          initialRouteName="Main"
-        >
-          <Stack.Screen name="Main" component={Main} />
-          <Stack.Screen name="Add" component={Add} />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </Provider>
-  );
+let customFonts = {
+  "Roboto-Black": require("./assets/fonts/Roboto-Black.ttf"),
+  "Roboto-Bold": require("./assets/fonts/Roboto-Bold.ttf"),
+  "Roboto-Regular": require("./assets/fonts/Roboto-Regular.ttf"),
 };
 
-export default App;
+export default class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      loaded: false,
+      loggedIn: false,
+      fontsLoaded: false,
+    };
+  }
+
+  async _loadFontsAsync() {
+    await Font.loadAsync(customFonts);
+    this.setState({ fontsLoaded: true });
+  }
+
+  componentDidMount() {
+    firebase.auth().onAuthStateChanged((user) => {
+      if (!user) {
+        this.setState({ loggedIn: false, loaded: true });
+      } else {
+        this.setState({ loggedIn: true, loaded: true });
+      }
+    });
+    this._loadFontsAsync();
+  }
+
+  render() {
+    const { loggedIn, loaded, fontsLoaded } = this.state;
+    if (!fontsLoaded || !loaded) {
+      return (
+        <View style={styles.container}>
+          <Text>Loading...</Text>
+        </View>
+      );
+    }
+    if (!loggedIn) {
+      return (
+        <NavigationContainer theme={theme}>
+          <Stack.Navigator initialRouteName="Landing">
+            <Stack.Screen
+              component={Landing}
+              name="Landing"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen component={Register} name="Register" />
+            <Stack.Screen component={Login} name="Login" />
+          </Stack.Navigator>
+        </NavigationContainer>
+      );
+    }
+
+    return (
+      <Provider store={store}>
+        <NavigationContainer>
+          <Stack.Navigator
+            screenOptions={{ headerShown: false }}
+            initialRouteName="Main"
+          >
+            <Stack.Screen component={Main} name="Main" />
+            <Stack.Screen component={Add} name="Add" />
+          </Stack.Navigator>
+        </NavigationContainer>
+      </Provider>
+    );
+  }
+}
 
 const theme = {
   ...DefaultTheme,

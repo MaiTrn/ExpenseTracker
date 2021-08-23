@@ -16,7 +16,10 @@ const reducer = (state = initialState, action) => {
         ...state,
         categoriesData: state.categoriesData.map((category) =>
           category.id == action.categoryID
-            ? { ...category, expenses: action.expenses }
+            ? {
+                ...category,
+                expenses: [...action.expenses],
+              }
             : category
         ),
       };

@@ -9,11 +9,17 @@ import {
   ScrollView,
   FlatList,
   Animated,
+  LogBox,
 } from "react-native";
 import { connect } from "react-redux";
 import { VictoryPie } from "victory-native";
 import { Svg } from "react-native-svg";
-import dummyData from "../DummyData";
+import firebase from "firebase";
+require("firebase/firestore");
+require("firebase/firebase-storage");
+import { bindActionCreators } from "redux";
+import { fetchCategories } from "../redux/actions";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
 const Home = (props) => {
   const [viewMode, setViewMode] = useState("chart");
@@ -21,13 +27,69 @@ const Home = (props) => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [showMore, setShowMore] = useState(false);
 
+  const [cAnimation, setCAnimation] = useState(new Animated.Value(0));
+
+  const currentDate = new Date();
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+
   React.useEffect(() => {
+    LogBox.ignoreLogs(["VirtualizedLists should never be nested"]);
     setCategories(props.categoriesData);
   }, [props.categoriesData]);
 
+  //List animation
   const categoryListHeightAnimationValue = useRef(
     new Animated.Value(115)
   ).current;
+
+  //Confirm status animation
+  const color = cAnimation.interpolate({
+    inputRange: [0, 0.2, 1.8, 2],
+    outputRange: [
+      "rgba(255, 255, 255, 0.0)",
+      "rgba(45, 57, 82, 0.5)",
+      "rgba(45, 57, 82, 0.8)",
+      "rgba(255, 255, 255, 0.0)",
+    ],
+  });
+  const openModal = cAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
+    extrapolate: "clamp",
+  });
+  const modalTrigger = () => {
+    Animated.timing(cAnimation, {
+      toValue: 1,
+      duration: 400,
+      useNativeDriver: false,
+    }).start();
+  };
+  const close = () => {
+    Animated.timing(cAnimation, {
+      toValue: 0,
+      duration: 400,
+      useNativeDriver: false,
+    }).start();
+  };
+  const open = {
+    transform: [{ scale: openModal }],
+  };
+  const background = {
+    backgroundColor: color,
+  };
 
   function renderHeader() {
     return (
@@ -47,7 +109,7 @@ const Home = (props) => {
         >
           <View>
             <Text style={{ color: COLORS.primary, ...FONTS.h2 }}>
-              My Expenses
+              MY EXPENSES
             </Text>
             <Text style={{ color: COLORS.darkgray, ...FONTS.h3 }}>
               Summary (private)
@@ -139,7 +201,11 @@ const Home = (props) => {
             }}
           >
             <Text style={{ color: COLORS.primary, ...FONTS.h3 }}>
-              11 Nov, 2020
+              {currentDate.getDate() +
+                " " +
+                months[currentDate.getMonth()] +
+                ", " +
+                currentDate.getFullYear()}
             </Text>
             <Text style={{ color: COLORS.darkgray, ...FONTS.bod4 }}>
               18% more than last month
@@ -150,6 +216,7 @@ const Home = (props) => {
     );
   }
 
+  //LIST VIEW FUNCTIONS - PENDING EXPENSES
   function renderCategoriesList() {
     const renderItem = ({ item, index }) => (
       <TouchableOpacity
@@ -191,7 +258,10 @@ const Home = (props) => {
 
     return (
       <View style={{ paddingHorizontal: SIZES.padding - 5 }}>
-        <Animated.View style={{ height: categoryListHeightAnimationValue }}>
+        <Animated.View
+          style={{ height: categoryListHeightAnimationValue }}
+          pointerEvents="box-none"
+        >
           <FlatList
             data={categories}
             keyExtractor={(item) => `${item.id}`}
@@ -207,7 +277,7 @@ const Home = (props) => {
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "center",
-            marginVertical: SIZES.base,
+            marginVertical: SIZES.base * 0.5,
           }}
           onPress={() => {
             //show less
@@ -248,6 +318,35 @@ const Home = (props) => {
     );
   }
 
+  function confirmExpense(item) {
+    firebase
+      .firestore()
+      .collection("usersData")
+      .doc(firebase.auth().currentUser.uid)
+      .collection("expensesData")
+      .doc(selectedCategory.id)
+      .collection("expenses")
+      .doc(item.id)
+      .update({
+        status: "C",
+        creation: {
+          month: currentDate.getMonth() + 1,
+          year: currentDate.getFullYear(),
+        },
+      })
+      .then(() => {
+        console.log("Document successfully updated!");
+        props.fetchCategories();
+        modalTrigger();
+        setSelectedCategory(false);
+      })
+      .catch((error) => {
+        // The document probably doesn't exist.
+        console.error("Error updating document: ", error);
+      });
+  }
+
+  //render expenses with "pending status"
   function renderIncomingExpenses() {
     let allExpenses = selectedCategory ? selectedCategory.expenses : [];
     let incomingExpenses = allExpenses?.filter((a) => a.status == "P");
@@ -310,7 +409,6 @@ const Home = (props) => {
           <Text style={{ ...FONTS.h2 }}>{item.title}</Text>
           <Text
             style={{
-              flexWrap: "wrap",
               color: COLORS.darkgray,
               ...FONTS.body3,
             }}
@@ -361,6 +459,7 @@ const Home = (props) => {
             borderBottomEndRadius: SIZES.radius,
             bottom: 0,
           }}
+          onPress={() => confirmExpense(item)}
         >
           <Text style={{ color: COLORS.white, ...FONTS.h3 }}>
             CONFIRM {item.total.toFixed(2)} USD
@@ -382,13 +481,13 @@ const Home = (props) => {
             INCOMING EXPENSES
           </Text>
           <Text style={{ color: COLORS.darkgray, ...FONTS.body4 }}>
-            {incomingExpenses.length} total
+            {incomingExpenses?.length} total
           </Text>
         </View>
 
         {/* Render Expenses */}
         <View>
-          {incomingExpenses.length > 0 && (
+          {incomingExpenses?.length > 0 && (
             <FlatList
               data={incomingExpenses}
               horizontal
@@ -397,12 +496,12 @@ const Home = (props) => {
               keyExtractor={(item) => `${item.id}`}
             />
           )}
-          {incomingExpenses.length == 0 && (
+          {incomingExpenses?.length == 0 && (
             <View
               style={{
                 alignItems: "center",
                 justifyContent: "center",
-                height: 200,
+                height: 280,
               }}
             >
               <Text style={{ color: COLORS.primary, ...FONTS.h3 }}>
@@ -414,7 +513,9 @@ const Home = (props) => {
       </View>
     );
   }
+  //END LIST VIEW FUNCTIONS
 
+  //CHART VIEW FUNCTIONS - CONFIRMED EXPENSES
   function processCategoryDataToDisplay() {
     //filter expenses with "Confirmed status"
     let chartData = categories?.map((item) => {
@@ -643,12 +744,16 @@ const Home = (props) => {
       </View>
     );
   }
+  //END CHART VIEW FUNCTIONS
 
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.lightGray2 }}>
       {renderHeader()}
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        style={{ marginBottom: 50 }}
+      >
         {viewMode == "list" && (
           <View>
             {renderCategoriesList()}
@@ -662,6 +767,95 @@ const Home = (props) => {
           </View>
         )}
       </ScrollView>
+      <Animated.View
+        style={[
+          background,
+          {
+            position: "absolute",
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
+            alignItems: "center",
+            justifyContent: "center",
+          },
+        ]}
+        pointerEvents="box-none"
+      >
+        <Animated.View
+          style={[
+            open,
+            {
+              position: "absolute",
+              width: 250,
+              height: 300,
+              borderRadius: SIZES.radius,
+              backgroundColor: COLORS.white,
+              padding: SIZES.padding,
+              paddingTop: 30,
+              justifyContent: "center",
+              alignItems: "center",
+              marginTop: 130,
+              ...styles.shadow2,
+            },
+          ]}
+          pointerEvents="box-none"
+        >
+          <View
+            style={{
+              height: 120,
+              width: 120,
+              borderRadius: 60,
+              backgroundColor: COLORS.lightgreen,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+            pointerEvents="none"
+          >
+            <View
+              style={{
+                height: 100,
+                width: 100,
+                borderRadius: 50,
+                backgroundColor: COLORS.white,
+                opacity: 1,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <MaterialCommunityIcons
+                name={"check"}
+                color={COLORS.lightgreen}
+                size={80}
+              />
+            </View>
+          </View>
+          <Text
+            style={{
+              paddingTop: 10,
+              color: COLORS.lightgreen,
+              ...FONTS.h4,
+            }}
+          >
+            Confirmed!
+          </Text>
+          <TouchableOpacity
+            style={{
+              marginTop: 40,
+              padding: 8,
+              backgroundColor: COLORS.secondary,
+              width: 100,
+              borderRadius: SIZES.radius,
+              justifyContent: "center",
+              alignItems: "center",
+              ...styles.shadow,
+            }}
+            onPress={() => close()}
+          >
+            <Text style={{ color: COLORS.white, ...FONTS.body3 }}>Close</Text>
+          </TouchableOpacity>
+        </Animated.View>
+      </Animated.View>
     </View>
   );
 };
@@ -670,7 +864,10 @@ const mapStateToProps = (store) => ({
   categoriesData: store.categoriesData,
 });
 
-export default connect(mapStateToProps, null)(Home);
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators({ fetchCategories }, dispatch);
+
+export default connect(mapStateToProps, mapDispatchToProps)(Home);
 
 const styles = StyleSheet.create({
   container: {
