@@ -7,13 +7,12 @@ import firebase from "firebase";
 import { Provider } from "react-redux";
 import { createStore, applyMiddleware } from "redux";
 import thunk from "redux-thunk";
+import { LogBox } from "react-native";
 
-import Landing from "./screens/auth/Landing";
-import Register from "./screens/auth/Register";
-import Login from "./screens/auth/Login";
-import Add from "./screens/Add.js";
-import Main from "./screens/Main.js";
-import rootReducer from "./redux/reducers";
+import { Landing, Login, Register } from "./src/screens/auth";
+import AddExpense from "./src/screens/main/addexpenses";
+import Main from "./src/screens/main";
+import rootReducer from "./src/redux/reducers";
 
 const Stack = createStackNavigator();
 
@@ -62,6 +61,8 @@ export default class App extends React.Component {
       }
     });
     this._loadFontsAsync();
+    LogBox.ignoreLogs(["Setting a timer"]);
+    LogBox.ignoreLogs(["VirtualizedLists should never be nested"]);
   }
 
   render() {
@@ -97,7 +98,7 @@ export default class App extends React.Component {
             initialRouteName="Main"
           >
             <Stack.Screen component={Main} name="Main" />
-            <Stack.Screen component={Add} name="Add" />
+            <Stack.Screen component={AddExpense} name="AddExpense" />
           </Stack.Navigator>
         </NavigationContainer>
       </Provider>

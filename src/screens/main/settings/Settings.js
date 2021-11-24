@@ -1,11 +1,15 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import firebase from "firebase";
-import { COLORS, FONTS, SIZES } from "../constants";
+import { COLORS, FONTS, SIZES } from "../../../constants";
+import { CommonActions } from "@react-navigation/routers";
 
-export default function Settings() {
+const Settings = (props) => {
   const onLogout = () => {
     firebase.auth().signOut();
+    props.navigation.dispatch(
+      CommonActions.reset({ index: 0, routes: [{ name: "Landing" }] })
+    );
   };
 
   return (
@@ -30,7 +34,10 @@ export default function Settings() {
       </View>
     </View>
   );
-}
+};
+
+export default Settings;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
