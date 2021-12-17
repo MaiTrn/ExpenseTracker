@@ -22,6 +22,8 @@ export const COLORS = {
   peach: "#FF615F",
   purple: "#8e44ad",
   red: "#FF0000",
+  danger: "#FF0058",
+  valid: "#2CB9B0",
 };
 
 export const SIZES = {
@@ -31,10 +33,24 @@ export const SIZES = {
   radius: 12,
   padding: 20,
   padding2: 36,
+  //border Radii
+  borderRadius: {
+    s: 4,
+    m: 10,
+    l: 25,
+    xl: 75,
+  },
+  //spacing
+  spacing: {
+    s: 8,
+    m: 16,
+    l: 24,
+    xl: 40,
+  },
 
   // font sizes
   largeTitle: 50,
-  h1: 30,
+  h1: 28,
   h2: 22,
   h3: 16,
   h4: 14,

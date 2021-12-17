@@ -5,7 +5,7 @@ import { ExpensePie, ExpenseSummaryList } from "./components";
 const ChartView = (props) => {
   //filter expenses with "Confirmed status"
   const processCategoryDataToDisplay = () => {
-    let chartData = props.categories?.map((item) => {
+    let cData = props.categories?.map((item) => {
       let confirmExpenses = item.expenses?.filter((a) => a.status == "C");
       var total = confirmExpenses?.reduce((a, b) => a + (b.total || 0), 0);
       return {
@@ -18,13 +18,13 @@ const ChartView = (props) => {
     });
 
     //filter expenses with no data/expenses
-    let filterChartData = chartData?.filter((item) => item.y > 0);
+    let filterChartData = cData?.filter((item) => item.y > 0);
 
     //Calculate the total expenses
     let totalExpense = filterChartData?.reduce((a, b) => a + (b.y || 0), 0);
 
     //calculate percentage and repopulate chart data
-    let finalChartData = filterChartData?.map((item) => {
+    return filterChartData?.map((item) => {
       let percentage = ((item.y / totalExpense) * 100).toFixed(0);
 
       return {
@@ -36,8 +36,6 @@ const ChartView = (props) => {
         id: item.id,
       };
     });
-
-    return finalChartData;
   };
 
   const setSelectCategoryByName = (name) => {

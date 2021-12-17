@@ -1,19 +1,15 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, LogBox, StatusBar } from "react-native";
 import * as Font from "expo-font";
 import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import firebase from "firebase";
 import { Provider } from "react-redux";
-import { createStore, applyMiddleware } from "redux";
-import thunk from "redux-thunk";
-import { LogBox } from "react-native";
 
-import { Landing, Login, Register } from "./src/screens/auth";
+import Authentication from "./src/screens/auth";
 import AddExpense from "./src/screens/main/addexpenses";
 import Main from "./src/screens/main";
-import rootReducer from "./src/redux/reducers";
-
+import store from "./src/redux/store";
 const Stack = createStackNavigator();
 
 const firebaseConfig = {
@@ -28,8 +24,6 @@ const firebaseConfig = {
 if (firebase.apps.length === 0) {
   firebase.initializeApp(firebaseConfig);
 }
-
-const store = createStore(rootReducer, applyMiddleware(thunk));
 
 let customFonts = {
   "Roboto-Black": require("./assets/fonts/Roboto-Black.ttf"),
@@ -74,29 +68,15 @@ export default class App extends React.Component {
         </View>
       );
     }
-    if (!loggedIn) {
-      return (
-        <NavigationContainer theme={theme}>
-          <Stack.Navigator initialRouteName="Landing">
-            <Stack.Screen
-              component={Landing}
-              name="Landing"
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen component={Register} name="Register" />
-            <Stack.Screen component={Login} name="Login" />
-          </Stack.Navigator>
-        </NavigationContainer>
-      );
-    }
-
     return (
       <Provider store={store}>
+        <StatusBar style="dark" />
         <NavigationContainer>
           <Stack.Navigator
             screenOptions={{ headerShown: false }}
-            initialRouteName="Main"
+            initialRouteName={loggedIn ? "Main" : "Authentication"}
           >
+            <Stack.Screen component={Authentication} name="Authentication" />
             <Stack.Screen component={Main} name="Main" />
             <Stack.Screen component={AddExpense} name="AddExpense" />
           </Stack.Navigator>

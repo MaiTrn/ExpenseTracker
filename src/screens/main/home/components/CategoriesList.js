@@ -17,20 +17,22 @@ const CategoriesList = (props) => {
     new Animated.Value(115)
   ).current;
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity
-      style={[styles.container, styles.shadow]}
-      onPress={() => {
-        props.setSelectedCategory(item);
-      }}
-    >
-      <Image
-        source={item.icon}
-        style={{ width: 20, height: 20, tintColor: item.color }}
-      />
-      <Text style={styles.categoryTitle}>{item.name}</Text>
-    </TouchableOpacity>
-  );
+  const renderItem = ({ item }) => {
+    return (
+      <TouchableOpacity
+        style={[styles.container, styles.shadow]}
+        onPress={() => {
+          props.setSelectedCategory(item);
+        }}
+      >
+        <Image
+          source={icons[item.icon.toLowerCase()]}
+          style={{ width: 20, height: 20, tintColor: item.color }}
+        />
+        <Text style={styles.categoryTitle}>{item.name}</Text>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={{ paddingHorizontal: SIZES.padding - 5 }}>

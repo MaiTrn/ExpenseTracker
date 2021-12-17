@@ -2,12 +2,12 @@ import React from "react";
 import { TextInput } from "react-native";
 import { SIZES, COLORS } from "../../../../constants";
 
-const Input = (props) => {
+const Input = ({ placeholder, onChange, value, ...props }) => {
   return (
     <TextInput
-      placeholder={props.placeholder}
-      onChangeText={props.onChange}
-      value={props.value}
+      placeholder={placeholder}
+      onChangeText={onChange}
+      value={value}
       style={{
         alignSelf: "center",
         paddingLeft: SIZES.padding * 0.6,
@@ -20,7 +20,7 @@ const Input = (props) => {
         height: 40,
         margin: SIZES.padding * 0.3,
       }}
-      {...props.keyboardType}
+      {...props}
     />
   );
 };

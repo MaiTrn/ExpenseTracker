@@ -148,6 +148,7 @@ const Form = (props) => {
       <Input
         placeholder="Amount"
         onChange={(text) => setTotal(text)}
+        type="number"
         keyboardType="numeric"
         value={total}
       />

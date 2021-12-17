@@ -1,14 +1,16 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { connect } from "react-redux";
 import firebase from "firebase";
 import { COLORS, FONTS, SIZES } from "../../../constants";
 import { CommonActions } from "@react-navigation/routers";
+import { fetchCategories } from "../../../redux/actions";
 
 const Settings = (props) => {
   const onLogout = () => {
     firebase.auth().signOut();
     props.navigation.dispatch(
-      CommonActions.reset({ index: 0, routes: [{ name: "Landing" }] })
+      CommonActions.reset({ index: 0, routes: [{ name: "Authentication" }] })
     );
   };
 
@@ -35,8 +37,15 @@ const Settings = (props) => {
     </View>
   );
 };
+const mapStateToProps = (store) => ({
+  categoriesData: store.categoriesData,
+});
 
-export default Settings;
+const mapDispatchToProps = {
+  fetchCategories,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Settings);
 
 const styles = StyleSheet.create({
   container: {

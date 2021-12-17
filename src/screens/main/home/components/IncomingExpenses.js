@@ -26,7 +26,7 @@ const IncomingExpenses = (props) => {
         {/* Title */}
         <View style={styles.imageContainer}>
           <Image
-            source={props.selectedCategory.icon}
+            source={icons[props.selectedCategory.icon.toString()]}
             style={{
               width: 25,
               height: 25,
