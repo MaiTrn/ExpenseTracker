@@ -1,11 +1,11 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import TextInput from "./components/TextInput";
 import { CommonActions } from "@react-navigation/routers";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import firebase from "firebase";
 
+import TextInput from "./components/TextInput";
 import { COLORS, FONTS, SIZES } from "../../constants";
 
 const LoginSchema = Yup.object().shape({

@@ -1,11 +1,11 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import TextInput from "./components/TextInput";
-
+import { CommonActions } from "@react-navigation/routers";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import firebase from "firebase";
 
+import TextInput from "./components/TextInput";
 import { COLORS, FONTS, SIZES } from "../../constants";
 
 const SignupSchema = Yup.object().shape({
@@ -41,7 +41,12 @@ const Register = (props) => {
                 name: modifiedName,
                 email,
               });
-            props.navigation.navigation("Landing");
+            props.navigation.dispatch(
+              CommonActions.reset({
+                index: 0,
+                routes: [{ name: "Landing" }],
+              })
+            );
           })
           .catch((error) => {
             console.log(error);
