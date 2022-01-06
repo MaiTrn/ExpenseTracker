@@ -12,7 +12,7 @@ const ConfirmPopUp = (props) => {
         visible={props.confirmVisible}
         onRequestClose={() => {
           Alert.alert("Closed.");
-          setConfirmVisible(!confirmVisible);
+          props.setConfirmVisible(!confirmVisible);
         }}
       >
         <View style={styles.background} />
@@ -23,7 +23,7 @@ const ConfirmPopUp = (props) => {
         visible={props.confirmVisible}
         onRequestClose={() => {
           Alert.alert("Closed.");
-          setConfirmVisible(!confirmVisible);
+          props.setConfirmVisible(!confirmVisible);
         }}
       >
         <View style={styles.centeredView}>
